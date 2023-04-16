@@ -1,0 +1,20 @@
+{
+    "scripts": {
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --watch"
+    },
+    "dependencies": {
+        "localforage": "^1.10.0"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.0",
+        "@types/localforage": "^0.0.34",
+        "@types/node": "^18.15.11",
+        "eslint": "^8.38.0",
+        "jest": "^29.5.0",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.4"
+    }
+}
