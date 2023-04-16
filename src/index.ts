@@ -30,13 +30,9 @@ export const fileSystemDriver: forage.LocalForageDriver = {
             await fs.rm(this._basePath, { recursive: true, force: true })
             await fs.mkdir(this._basePath, { recursive: true })
 
-            if (callback) {
-                callback(null)
-            }
+            callFnc(callback, null)
         } catch (error) {
-            if (callback) {
-                callback(error)
-            }
+            callFnc(callback, error)
 
             throw error
         }
@@ -51,15 +47,11 @@ export const fileSystemDriver: forage.LocalForageDriver = {
             const data = await fs.readFile(filePath, 'utf-8')
             const value = JSON.parse(data) as T
 
-            if (callback) {
-                callback(null, value)
-            }
+            callFnc(callback, null, value)
 
             return value
         } catch (error) {
-            if (callback) {
-                callback(error, null)
-            }
+            callFnc(callback, error, null)
 
             return null
         }
@@ -81,10 +73,12 @@ export const fileSystemDriver: forage.LocalForageDriver = {
                 if (result) break
             }
 
-            if (callback) callback(null, result)
+            callFnc(callback, null, result)
+
             return result
         } catch (error) {
-            if (callback) callback(error, null)
+            callFnc(callback, error, null)
+
             throw error
         }
     },
@@ -97,15 +91,11 @@ export const fileSystemDriver: forage.LocalForageDriver = {
             const keys = await fs.readdir(this._basePath)
             const key = keys[keyIndex] || null
 
-            if (callback) {
-                callback(null, key)
-            }
+            callFnc(callback, null, key)
 
             return key
         } catch (error) {
-            if (callback) {
-                callback(error, null)
-            }
+            callFnc(callback, error, null)
 
             throw error
         }
@@ -115,15 +105,11 @@ export const fileSystemDriver: forage.LocalForageDriver = {
         try {
             const keys = await fs.readdir(this._basePath)
 
-            if (callback) {
-                callback(null, keys)
-            }
+            callFnc(callback, null, keys)
 
             return keys
         } catch (error) {
-            if (callback) {
-                callback(error, [])
-            }
+            callFnc(callback, error, [])
 
             throw error
         }
@@ -134,13 +120,11 @@ export const fileSystemDriver: forage.LocalForageDriver = {
             const keys = await fs.readdir(this._basePath)
             const numberOfKeys = keys.length
 
-            if (callback) {
-                callback(null, numberOfKeys)
-            }
+            callFnc(callback, null, numberOfKeys)
 
             return numberOfKeys
         } catch (error) {
-            if (callback) callback(error, 0)
+            callFnc(callback, error, 0)
 
             throw error
         }
@@ -151,13 +135,9 @@ export const fileSystemDriver: forage.LocalForageDriver = {
         try {
             await fs.unlink(filePath)
 
-            if (callback) {
-                callback(null)
-            }
+            callFnc(callback, null, null)
         } catch (error) {
-            if (callback) {
-                callback(error)
-            }
+            callFnc(callback, error)
 
             throw error
         }
@@ -169,15 +149,11 @@ export const fileSystemDriver: forage.LocalForageDriver = {
             const data = JSON.stringify(value)
             await fs.writeFile(filePath, data, 'utf-8')
 
-            if (callback) {
-                callback(null, value)
-            }
+            callFnc(callback, null, value)
 
             return value
         } catch (error) {
-            if (callback) {
-                callback(error, null)
-            }
+            callFnc(callback, error, null)
 
             throw error
         }
@@ -190,3 +166,9 @@ export default forage.createInstance({
     driver: fileSystemDriver._driver,
     name: 'myDatabase'
 })
+
+function callFnc(callback?: (err: any, value: any) => void, err?: any, value?: any) {
+    if (callback) {
+        callback(err, value)
+    }
+}
