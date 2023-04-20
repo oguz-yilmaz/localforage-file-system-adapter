@@ -38,39 +38,25 @@ export const fileSystemDriver: forage.LocalForageDriver = {
         }
     },
 
-    async getItem<T>(
-        key: string,
-        callback?: (err: any, value: T | null) => void
-    ): Promise<T | null> {
-        const filePath = path.join(this._basePath, key)
-        try {
-            const data = await fs.readFile(filePath, 'utf-8')
-            const value = JSON.parse(data) as T
-
-            callFnc(callback, null, value)
-
-            return value
-        } catch (error) {
-            callFnc(callback, error, null)
-
-            return null
-        }
-    },
-
     async iterate<T, U>(
         iteratee: (value: T, key: string, iterationNumber: number) => U,
         callback?: (err: any, result: U) => void
     ): Promise<U> {
         try {
             const keys = await fs.readdir(this._basePath)
+
             let iterationNumber = 1
             let result: U
 
             for (const key of keys) {
-                // @ts-ignore
+                // @ts-ignore - getItem uses readFile
                 const value = await (this as forage.LocalForageDriver).getItem<T>(key)
+
                 result = iteratee(value, key, iterationNumber++)
-                if (result) break
+
+                if (result === false) {
+                    break
+                }
             }
 
             callFnc(callback, null, result)
@@ -132,6 +118,7 @@ export const fileSystemDriver: forage.LocalForageDriver = {
 
     async removeItem(key: string, callback?: (err: any) => void): Promise<void> {
         const filePath = path.join(this._basePath, key)
+
         try {
             await fs.unlink(filePath)
 
@@ -145,9 +132,9 @@ export const fileSystemDriver: forage.LocalForageDriver = {
 
     async setItem<T>(key: string, value: T, callback?: (err: any, value: T) => void): Promise<T> {
         const filePath = path.join(this._basePath, key)
+
         try {
-            const data = JSON.stringify(value)
-            await fs.writeFile(filePath, data, 'utf-8')
+            await fs.writeFile(filePath, String(value), 'utf-8')
 
             callFnc(callback, null, value)
 
@@ -157,18 +144,40 @@ export const fileSystemDriver: forage.LocalForageDriver = {
 
             throw error
         }
+    },
+
+    async getItem<T>(
+        key: string,
+        callback?: (err: any, value: T | null) => void
+    ): Promise<T | null> {
+        const filePath = path.join(this._basePath, key)
+
+        try {
+            const data = await fs.readFile(filePath, 'utf-8')
+            const value = String(data) as T
+
+            callFnc(callback, null, value)
+
+            return value
+        } catch (error) {
+            callFnc(callback, error, null)
+
+            return null
+        }
     }
 }
-
-forage.defineDriver(fileSystemDriver)
-
-export default forage.createInstance({
-    driver: fileSystemDriver._driver,
-    name: 'myDatabase'
-})
 
 function callFnc(callback?: (err: any, value: any) => void, err?: any, value?: any) {
     if (callback) {
         callback(err, value)
     }
+}
+
+export default async function (options?: options): Promise<LocalForage> {
+    await forage.defineDriver(fileSystemDriver)
+
+    return forage.createInstance({
+        driver: [fileSystemDriver._driver],
+        ...options
+    })
 }
