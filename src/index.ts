@@ -134,7 +134,7 @@ export const fileSystemDriver: forage.LocalForageDriver = {
         const filePath = path.join(this._basePath, key)
 
         try {
-            await fs.writeFile(filePath, String(value), 'utf-8')
+            await fs.writeFile(filePath, JSON.stringify(value), 'utf-8')
 
             callFnc(callback, null, value)
 
@@ -154,7 +154,7 @@ export const fileSystemDriver: forage.LocalForageDriver = {
 
         try {
             const data = await fs.readFile(filePath, 'utf-8')
-            const value = String(data) as T
+            const value = JSON.parse(data) as T
 
             callFnc(callback, null, value)
 
